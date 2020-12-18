@@ -43,13 +43,18 @@ my_direction = LEFT
 # Para controlar o tempo da cobra
 clock = pygame.time.Clock()
 
-while True:
-    clock.tick(20)
+font = pygame.font.Font('freesansbold.ttf', 18)
+score = 0
+
+game_over = False
+while not game_over:
+    clock.tick(10)
     for event in pygame.event.get():
         
         # Para sair do jogo
         if event.type == QUIT:
             pygame.quit()
+            exit()
 
         # Para controlar a cobra
         if event.type == KEYDOWN:
@@ -66,11 +71,19 @@ while True:
     if collision(snake[0], apple_pos):
         apple_pos = on_grid_random()
         snake.append((0,0))
+        score = score + 1
 
-    # Momento da colisão com a cobra   
-    if collision(snake[0], snake[0:]):
-        print('Game Over')
-        pygame.quit()
+    if snake[0][0] == 600 or snake[0][1] == 600 or snake[0][0] < 0 or snake[0][1] < 0:
+        game_over = True
+        break
+
+    for i in range(1, len(snake) - 1):
+        if snake[0][0] == snake[i][0] and snake[0][1] == snake[i][1]:
+            game_over = True
+            break
+
+    if game_over:
+        break
 
     # Para movimentar o corpo da cobra
     for i in range(len(snake) - 1, 0, -1):
@@ -95,8 +108,33 @@ while True:
     # Para plotar a maçã:
     screen.blit(apple, apple_pos)
 
+    # Criar as Grids
+    for x in range(0, 600, 10): #vertical
+        pygame.draw.line(screen, (40, 40, 40), (x, 0), (x, 600))
+    for y in range(0, 600, 10): #horizontal
+        pygame.draw.line(screen, (40, 40, 40), (0, y), (600, y))
+
+    score_font = font.render('Score: %s' % (score), True, (255, 255, 255))
+    score_rect = score_font.get_rect()
+    score_rect.topleft = (600 - 120, 10)
+    screen.blit(score_font, score_rect)
+
     for pos in snake:
         # Para plotar o jogo na tela
         screen.blit(snake_skin, pos)
 
     pygame.display.update()
+
+while True:
+    game_over_font = pygame.font.Font('freesansbold.ttf', 75)
+    game_over_screen = game_over_font.render('Game Over', True, (255, 255, 255))
+    game_over_rect = game_over_screen.get_rect()
+    game_over_rect.midtop = (600 / 2, 10)
+    screen.blit(game_over_screen, game_over_rect)
+    pygame.display.update()
+    pygame.time.wait(500)
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                exit()
